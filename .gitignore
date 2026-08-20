@@ -1,0 +1,13 @@
+# OS/editor cruft
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Python (if formal/proof-of-concept code is added later)
+__pycache__/
+*.pyc
+.venv/
+
+# Node (if tooling is added later)
+node_modules/
