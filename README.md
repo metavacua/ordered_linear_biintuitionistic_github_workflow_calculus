@@ -31,20 +31,52 @@ survives the same adversarial standard the founding claims just failed, or
 to characterize precisely *why* no such mapping exists, which is itself a
 real, useful result.
 
-Two findings from that same research run are load-bearing for the whole
-project and are worth stating immediately, because they already correct
-assumptions this project's own earlier conversational scaffolding made
-in passing (see [`docs/working-notes-2026-08-20.md`](docs/working-notes-2026-08-20.md)
-for the corrected discussion):
+Two points are load-bearing for the whole project and are worth stating
+immediately. The second is a finding directly from that research run; the
+first started as a research-run finding but needed a further scope
+correction, which is stated in its corrected form below. Both already
+correct assumptions this project's own earlier conversational scaffolding
+made in passing (see
+[`docs/working-notes-2026-08-20.md`](docs/working-notes-2026-08-20.md) for
+the corrected discussion):
 
-1. **GitHub Actions artifacts are almost certainly not linear resources.**
-   An artifact is re-downloadable an arbitrary number of times within its
-   retention window. Structurally, that is the *exponential* (`!`,
-   "of course", freely reusable) modality of linear logic, not a
-   single-use linear resource consumed exactly once. Any future claim in
-   this repository that treats an artifact, or a fact derived from one, as
-   a linear resource needs to confront this mismatch directly rather than
-   assume it away.
+1. **Artifact linearity is a per-edge, per-workflow-graph property — not a
+   category-wide verdict on "GitHub Actions artifacts" as a platform
+   primitive.** The research run's original framing ("artifacts are
+   almost certainly not linear resources," because an artifact is
+   re-downloadable an arbitrary number of times within its retention
+   window) conflated two different scopes. Re-downloadability is a
+   capability of the *ambient platform* — GitHub Actions as a system is
+   expressive enough to let any artifact be fetched by any number of
+   consumers. That is a fact about the host system's ceiling, not a fact
+   about how a *specific* artifact is actually used in a *specific*
+   workflow's dependency graph. This is the same distinction the Chomsky
+   hierarchy makes precise: a language's membership in a narrower class
+   (say, regular) is not refuted by the fact that a more expressive host
+   system (a Turing-complete language) is also capable of expressing or
+   simulating it. A strictly-included class's intrinsic properties survive
+   being embedded in a more powerful ambient system; they are not
+   retroactively erased by that system's greater ceiling.
+
+   The correct question is therefore per-edge and decidable by inspecting
+   real call sites: for a given uploaded artifact, how many distinct
+   `actions/download-artifact` invocations (across however many jobs)
+   actually consume it in this specific workflow? In the pipeline that
+   originally motivated this repository, both answers are observable
+   today, side by side, in the same committed workflow file — counted
+   directly from its real `actions/download-artifact` call sites, not
+   inferred from its design documents: `dependency-graph-batch-N` is
+   uploaded once per batch (by the `dependency-graph` job) and downloaded
+   by exactly one job, `indexing`, via a wildcard
+   `pattern: dependency-graph-batch-*` — a genuinely linear edge,
+   single-use by construction. `target-capability-batch-N`, uploaded once
+   per batch by the `target-capability` job, is downloaded by *two*
+   distinct jobs — `build-attempt` (by exact name) and `indexing` (via a
+   wildcard `pattern: target-capability-batch-*`) — a genuinely
+   non-linear, exponential edge. Both are real, and they coexist in one
+   graph, right now. "Are GitHub Actions artifacts linear?" is
+   consequently the wrong-shaped question; "is this edge, in this graph,
+   linear?" is the one with a decidable, mechanically checkable answer.
 
 2. **The word "linear" in this repository's name is load-bearing, not
    decorative.** A verified (3-0) result traces a real theorem: adding
@@ -56,6 +88,61 @@ for the corrected discussion):
    the actual, cited reason a "constructive vs. dual vs. co-constructive"
    distinction has to be framed in a resource-sensitive (linear) logic at
    all, rather than an ordinary one — it is not a stylistic preference.
+
+## Methodology note: what "14/14 refuted" actually demonstrates
+
+The adversarial-verification method used in the deep-research run — three
+independent skeptics per claim, kill on 2/3 refutes — is a
+*literature-conformance* check: a claim survives only if a verifier can
+find prior, citable, peer-reviewed support for it. That method is
+well-suited to catching overclaims dressed as established fact. It is
+structurally **unable** to confirm a claim that is true but genuinely
+novel, because "genuinely novel" means no prior citable source yet states
+it — there is nothing for a literature-conformance verifier to find. Run
+that method against any first-correct instance of a new result and it
+returns the same verdict a false claim would get: refuted, for want of a
+citation.
+
+This means "every one of the 14 claims mapping GitHub Actions concepts
+onto linear-logic structure failed adversarial verification" is evidence
+about a mismatch between *method* and *claim type* for at least some of
+those claims — not evidence that no such mapping exists anywhere. The 14
+attempts were, in every case the report describes, **top-down**: start
+from an established linear-logic concept (an introduction/elimination
+pair, a resource channel, combinatory structure, a resource-bounded
+effect model) and ask whether some named GitHub Actions feature
+instantiates it. The refutation evidence behind the 0-3/1-2 votes is not
+uniform, though, and shouldn't be flattened into one story: some
+refutations plausibly reduce to sheer absence of prior citable support
+(the literature-conformance failure mode this section is about); at
+least one — the artifacts claim — was refuted by a *substantive*
+mechanical argument (re-downloadability implies the exponential, not
+linear, modality) that the report's own open questions flagged as
+possibly "the specific, unexamined reason the artifact-based claims
+failed verification." Finding 1 above shows that argument itself was
+scoped incorrectly — category-wide instead of per-edge — a third failure
+mode distinct from both citation-absence and outright falsity: a real
+mechanical observation, generalized past where it actually holds. All
+three failure modes share the property that a top-down,
+literature-checking method cannot by itself tell them apart; only tracing
+the claim back to the real mechanics decides which one occurred.
+
+The **converse** direction is the one this repository now treats as the
+more productive path: start from GitHub Actions' own real, mechanically
+observed structure — actual call sites, actual `needs:` edges, the actual
+number of consumers a given artifact has in a given graph, the actual gap
+between `steps.X.conclusion` and `steps.X.outcome` — and derive whatever
+logical structure that evidence actually supports, rather than checking a
+pre-selected logical concept against it. The corrected, per-edge
+artifact-linearity result above is the first output of that method: it
+did not start from "is there a linear resource here?" (the top-down
+question the original 14 attempts asked and failed) — it started from
+counting real `download-artifact` call sites in a real workflow, and only
+afterward named the result using linear-logic vocabulary. The existing
+linear logic, LFI/LFU, and bi-intuitionistic literature remains essential
+to this repository — not as a verification oracle for authenticating
+originality, but as the precise vocabulary this bottom-up derivation
+borrows once it has already found something real to name.
 
 ## What "constructive," "dual," and "co-constructive" mean here
 
@@ -133,11 +220,20 @@ this project.
   logic programming sound (avoiding unrestricted `∨`/`⊕`, `∃`, `⊗`, `!`),
   or does workflow syntax structurally require exactly the connectives
   that break goal-directedness?
-- Given finding 1 above (artifacts ≈ exponential, not linear), is there
-  *any* genuinely single-use, linear-resource-shaped concept in GitHub
-  Actions' actual mechanics — and if not, does that sink the "linear"
-  framing for GitHub Actions specifically, independent of whether it holds
-  for the abstract calculus?
+- Finding 1 above already answers the narrower question this bullet
+  originally asked (does *any* genuinely single-use, linear-resource-shaped
+  edge exist in GitHub Actions' real mechanics) — yes, confirmed directly
+  from the live workflow file: `dependency-graph-batch-N` has exactly one
+  real consumer (`indexing`). The open question this sharpens into:
+  is artifact-edge linearity **statically decidable from the workflow YAML
+  alone** (counting `download-artifact` call sites syntactically), or does
+  it require accounting for dynamic constructs — `matrix` expansion,
+  `fromJSON`-indexed consumption, wildcard `pattern:` matches — that can
+  make the real consumer count depend on values only known at run time? A
+  static, syntax-only linearity checker would be directly useful (a lint
+  flagging an artifact assumed single-use but actually fanned out to N
+  consumers); whether one is possible in general, or only sound for a
+  restricted syntactic subset, is unresolved.
 - Do GitHub Actions jobs — multiple upstream `needs:` (multi-input),
   multiple downstream dependents (multi-output fan-out) — fit the
   multicategory (single-output/constructive) or polycategory

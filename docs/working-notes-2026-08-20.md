@@ -101,17 +101,39 @@ ${{ contains(fromJSON(needs.indexing.outputs.dependency-culprits-by-target)[matr
 
 > **Retrospective correction, 2026-08-20 (post deep-research):** the
 > language used at this point in the original conversation — "the same
-> linear resource consumed twice" — was not qualified carefully enough. The
-> deep-research run's open questions flag exactly this: whether anything in
-> GitHub Actions actually behaves as a *linear* (single-use) resource is
-> unconfirmed, and artifacts specifically — re-downloadable arbitrarily
-> within their retention window — structurally resemble the *exponential*
-> (`!`, freely reusable) modality instead. The `contains()` pattern above is
-> still a reasonable *membership check*; calling what it detects a "linear
-> resource" specifically was an overclaim the later research walked back.
-> "Shared antecedent fact" is the accurate, hedged description; "shared
-> linear resource" is the claim this repository would need to actually
-> establish, not assume.
+> linear resource consumed twice" — was not qualified carefully enough.
+> "Shared antecedent fact" is the accurate, hedged description for what
+> the `contains()` pattern above actually detects; calling it a "linear
+> resource" was an overclaim.
+>
+> **Second correction, 2026-08-20 (post-README-fix):** the correction
+> above then overcorrected in the other direction, treating "exponential,
+> not linear" as a category-wide verdict on "GitHub Actions artifacts."
+> That conflated two distinct mechanisms. What the `contains()` expression
+> above actually reads —
+> `needs.indexing.outputs.dependency-culprits-by-target` — is a **job
+> output**, not an uploaded-and-downloaded artifact. Job outputs
+> (`needs.<job>.outputs.*`) are unconditionally exponential by
+> construction: GitHub Actions has no consume/exhaust semantics for them
+> at all — any number of downstream jobs that list the producing job in
+> `needs:` can read the same output, with no mechanism to restrict it to a
+> single reader. For *this specific mechanism*, "always exponential" is
+> correctly scoped and is not an overclaim.
+>
+> Uploaded artifacts (`actions/upload-artifact` /
+> `actions/download-artifact`) are a genuinely separate mechanism, and for
+> *that* mechanism linearity is real and per-edge, not settled either way
+> in general — decidable only by counting how many distinct
+> `download-artifact` call sites actually reference a given upload in a
+> given workflow graph. See the corrected framing and the real
+> single-consumer / multi-consumer example (`dependency-graph-batch-N` vs.
+> `target-capability-batch-N`, both counted directly from the live
+> workflow file) in the top-level
+> [`README.md`](../README.md#status-open-research-question-not-an-established-result).
+> The lesson carried forward is the one the README now states directly: a
+> category-wide verdict on "artifacts" collapses two different GitHub
+> Actions mechanisms that have two different, non-analogous linearity
+> answers.
 
 **Vacuous succedent (doesn't depend on the antecedent at all)** — only
 checkable by comparing the *same* output across every matrix leg, which
